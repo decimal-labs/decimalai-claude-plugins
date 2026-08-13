@@ -1,0 +1,26 @@
+{
+  "name": "decimalai",
+  "owner": {
+    "name": "Decimal AI",
+    "email": "hello@decimal.ai"
+  },
+  "description": "Skills ranked by measured effectiveness — search, install, and regression-check from the DecimalAI registry.",
+  "plugins": [
+    {
+      "name": "decimalai",
+      "source": "./plugins/decimalai",
+      "displayName": "DecimalAI Skills Registry",
+      "description": "Search the DecimalAI skills registry (ranked by verified benchmark lift, not downloads), install a skill (SKILL.md + attachments) into your project, and set up the regression-check GitHub Action.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Decimal AI"
+      },
+      "homepage": "https://app.decimal.ai/skills",
+      "repository": "https://github.com/decimal-labs/decimalai-claude-plugins",
+      "license": "MIT",
+      "category": "productivity",
+      "keywords": ["skills", "registry", "agents", "regression-testing", "evals"],
+      "tags": ["skills", "registry", "benchmarks", "ci"]
+    }
+  ]
+}

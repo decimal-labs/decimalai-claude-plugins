@@ -1,0 +1,11 @@
+{
+  "name": "decimalai",
+  "description": "Search the DecimalAI skills registry, install skills into your project, and set up regression checking.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Decimal AI",
+    "email": "hello@decimal.ai"
+  },
+  "homepage": "https://app.decimal.ai/skills",
+  "license": "MIT"
+}

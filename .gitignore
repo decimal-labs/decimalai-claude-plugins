@@ -1,0 +1,49 @@
+# This repo ships prompt text and two JSON manifests — no build, no toolchain.
+# The list below is the DecimalAI baseline shared across our public repos: most
+# of these artefacts cannot be produced here, and they are listed so that a
+# scratch script, a local venv, or an editor never turns into a committed one.
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Local agent/tool state. This repo is loaded BY Claude Code, so a stray
+# working-directory .claude/ is scratch, never a deliverable — the shipped
+# plugin lives under plugins/decimalai/ and is committed.
+.claude/
+
+# Environment files. Real credentials never belong in the tree.
+.env
+.env.*
+
+# Python (local helper scripts, venvs)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+dist/
+*.log
+
+# Test, lint and type-check caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.deepeval/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Scratch
+tmp/
