@@ -13,8 +13,9 @@ Two ways to reach us, either is fine:
 
 - **GitHub private vulnerability reporting** — **Security → Report a vulnerability** on this
   repository. That opens a private advisory only maintainers can see.
-- **Email** — [hello@decimal.ai](mailto:hello@decimal.ai). A PGP key is available on request if
-  you would rather not send details in cleartext.
+- **Email** — [hello@decimal.ai](mailto:hello@decimal.ai). We do not publish a PGP key. If you
+  would rather not put the details in cleartext email, use the GitHub channel above — the advisory
+  is visible only to you and the maintainers.
 
 Include what you have: what you found, how to reproduce it, which version of the plugin you had
 installed (`version` in `plugins/decimalai/.claude-plugin/plugin.json`), and what an attacker
