@@ -45,14 +45,13 @@ body = rec.get("body_markdown")
 if not body:
     sys.exit(f"skill {rec['name']!r} has no body to install")
 version = rec.get("latest_version_number") or 1
-# ADDRESS from url_slug, IDENTITY from name — the same split the npx channel
-# makes (decimalai-npm lib/add.js). `name` may be namespaced ("owner/skill");
+# ADDRESS from url_slug, IDENTITY from name. `name` may be namespaced ("owner/skill");
 # it belongs in the frontmatter but cannot be one path component. Falling back
 # to `name` keeps older records working, which is exactly why the guard below
 # is not optional.
 slug = rec.get("url_slug") or rec["name"]
-# Refuse, never sanitise — mirrors safeSkillDirname() in the npx channel and
-# _safe_skill_dirname() in the Python SDK. This value comes from a remote
+# Refuse, never sanitise — mirrors _safe_skill_dirname() in the Python SDK
+# (decimal-labs/decimalai-python). This value comes from a remote
 # server and becomes a directory name; a quiet rewrite would hide a hostile
 # record instead of surfacing it.
 if (not slug or slug in (".", "..") or "\0" in slug
@@ -63,11 +62,11 @@ stamp_lines = [
     f"source: https://app.decimal.ai/s/{slug}@{version}/SKILL.md",
     f"source_sha256: {hashlib.sha256(body.encode()).hexdigest()[:12]}",
 ]
-# Plain YAML scalar when safe, JSON-quoted otherwise (same rule as the npx
-# channel — ':' is never safe-plain, it would start a nested mapping).
+# Plain YAML scalar when safe, JSON-quoted otherwise — ':' is never
+# safe-plain, it would start a nested mapping.
 y = lambda v: v if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 ._/@-]*", v) else json.dumps(v, ensure_ascii=False)
-# Frontmatter detection mirrors the npx channel: CRLF bodies, an EOF close,
-# and an empty block all merge instead of double-stamping.
+# Frontmatter detection handles CRLF bodies, an EOF close, and an empty
+# block — all merge instead of double-stamping.
 m = re.match(r"---\r?\n(?:([\s\S]*?)\r?\n)?---(\r?\n|$)", body)
 if m:
     kept = [l for l in re.split(r"\r?\n", m.group(1) or "")

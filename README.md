@@ -21,7 +21,7 @@ All commands use DecimalAI's public registry API — no account or API key neede
 
 ## Why this registry?
 
-Every public skill on DecimalAI carries a safety-scan verdict, an LLM intent review, and — where benchmarked — a **verified lift** against a no-skill baseline ("+12 pts pass rate on gemini-3.5-flash", re-tested as models improve). `/decimalai:search` surfaces that evidence next to every result, so you install what's proven to work, not what's most downloaded.
+Every public skill on DecimalAI carries a safety-scan verdict, an LLM intent review, and — where benchmarked — a **verified lift** against a no-skill baseline ("+12 pts pass rate on gemini-3.5-flash", re-benchmarked when the skill changes). `/decimalai:search` surfaces that evidence next to every result, so you install what's proven to work, not what's most downloaded.
 
 ## Repo layout
 

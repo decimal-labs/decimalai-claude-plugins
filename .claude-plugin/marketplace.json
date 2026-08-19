@@ -11,7 +11,7 @@
       "source": "./plugins/decimalai",
       "displayName": "DecimalAI Skills Registry",
       "description": "Search the DecimalAI skills registry (ranked by verified benchmark lift, not downloads), install a skill (SKILL.md + attachments) into your project, and set up the regression-check GitHub Action.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "Decimal AI"
       },
