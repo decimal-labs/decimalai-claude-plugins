@@ -11,7 +11,9 @@ The registry ranks skills by measured effectiveness — verified A/B benchmark l
 Steps:
 
 1. Parse `$ARGUMENTS`: the free text is the query; honor `--category <cat>` and `--sort <axis>` flags if present (default sort: `recommended`).
-2. Run (URL-encode the query):
+2. Run (**URL-encode the query** — percent-encoding is what keeps a crafted query out of the
+   shell as well as out of the URL: `` ` `` and `$(` still execute inside a double-quoted
+   string, and encoding turns them into `%60` and `%24%28` before they get there):
 
 ```bash
 curl -s "https://api.decimal.ai/api/v1/registry/skills?q=<QUERY>&sort=<SORT>&limit=10"

@@ -11,15 +11,22 @@ Steps:
 1. **Check the identifier, then fetch.** `$ARGUMENTS` must be a skill's `url_slug` — the
    slash-free identifier the registry addresses skills by. A registry `name` may be namespaced
    (`a5c-ai/appimage-builder`); that is the skill's identity, not its address, and it resolves as
-   neither a URL path segment nor a directory name. If `$ARGUMENTS` contains `/` or `\`, is `.`
-   or `..`, or begins with `/` or `~`, **STOP and refuse** — do not strip, escape, or percent-encode
-   it and retry (`%2F` 404s too). Tell the user that looks like a skill `name` rather than a
-   `url_slug`, and to run `/decimalai:search` and use the `url_slug` column.
+   neither a URL path segment nor a directory name.
+
+   **`$ARGUMENTS` must match `^[A-Za-z0-9][A-Za-z0-9._-]*$` and must not be `.` or `..`. If it does
+   not, STOP and refuse** — do not strip, escape, or percent-encode it and retry (`%2F` 404s too).
+   An allowlist rather than a list of bad characters, because this value is interpolated into a
+   double-quoted shell string below: inside double quotes a backtick or `$(` still executes, so
+   enumerating path separators would let a command-substitution payload through. Anything a real
+   `url_slug` contains is inside the allowlist, so nothing legitimate is lost.
+
+   When it fails, tell the user that looks like a skill `name` rather than a `url_slug`, and to run
+   `/decimalai:search` and use the `url_slug` column.
 
    Then fetch the skill record (public endpoint, no key needed) and save it:
 
 ```bash
-curl -sf "https://api.decimal.ai/api/v1/registry/skills/$ARGUMENTS" -o /tmp/decimalai-skill.json
+REC=$(mktemp -t decimalai-skill) && curl -sf "https://api.decimal.ai/api/v1/registry/skills/$ARGUMENTS" -o "$REC" && echo "$REC"
 ```
 
    If curl exits non-zero (`-f` writes no file on an error status — a 404 exits 22 over HTTP/1.1
@@ -36,9 +43,11 @@ curl -sf "https://api.decimal.ai/api/v1/registry/skills/$ARGUMENTS" -o /tmp/deci
 3. Build the stamped SKILL.md content. Run this to print it (it adds provenance frontmatter — `source` pointing at the registry version and `source_sha256`, the first 12 hex chars of the SHA-256 of the exact `body_markdown` as fetched, computed *before* stamping; any stale top-level `source`/`source_sha256` keys are replaced):
 
 ```bash
-python3 - <<'PY'
+# <REC> is the temp path step 1 printed — substitute it literally; each command
+# runs in its own shell, so the variable from step 1 is not in scope here.
+python3 - <REC> <<'PY'
 import json, hashlib, re, sys
-rec = json.load(open("/tmp/decimalai-skill.json"))
+rec = json.load(open(sys.argv[1]))
 if "name" not in rec:  # error shape, e.g. {"detail": "..."}
     sys.exit(f"registry error: {rec.get('detail') or rec}")
 body = rec.get("body_markdown")
@@ -91,7 +100,10 @@ PY
 curl -s "https://api.decimal.ai/api/v1/registry/skills/$ARGUMENTS/attachments"
 ```
 
-   For each entry in the `attachments` array, fetch its content by `id`:
+   For each entry in the `attachments` array, fetch its content by `id`. **The `id` comes from the
+   registry and lands in a double-quoted shell string, so apply the same rule as the slug: it must
+   match `^[A-Za-z0-9._-]+$`. Skip and warn on anything else** — a hostile or corrupted record must
+   not be able to reach the shell through a field the user never typed:
 
 ```bash
 curl -s "https://api.decimal.ai/api/v1/registry/skills/$ARGUMENTS/attachments/<id>"

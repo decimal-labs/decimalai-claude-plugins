@@ -1,7 +1,7 @@
 ---
 description: Set up DecimalAI's regression-check GitHub Action for this repo
 argument-hint: [agent-name]
-allowed-tools: Read, Write, Bash(ls:*), Bash(git:*)
+allowed-tools: Read, Write, Bash(ls:*)
 ---
 
 Help the user add DecimalAI's **regression-check** GitHub Action to this repository. The Action diffs the agent's candidate manifest against recorded production traces on every PR and posts an impact report — which traces would break, at what risk level — with **no eval cases required**.
