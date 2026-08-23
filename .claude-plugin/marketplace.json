@@ -15,12 +15,23 @@
       "author": {
         "name": "Decimal AI"
       },
-      "homepage": "https://app.decimal.ai/skills",
+      "homepage": "https://github.com/decimal-labs/decimalai-claude-plugins",
       "repository": "https://github.com/decimal-labs/decimalai-claude-plugins",
       "license": "MIT",
       "category": "productivity",
-      "keywords": ["skills", "registry", "agents", "regression-testing", "evals"],
-      "tags": ["skills", "registry", "benchmarks", "ci"]
+      "keywords": [
+        "skills",
+        "registry",
+        "agents",
+        "regression-testing",
+        "evals"
+      ],
+      "tags": [
+        "skills",
+        "registry",
+        "benchmarks",
+        "ci"
+      ]
     }
   ]
 }
