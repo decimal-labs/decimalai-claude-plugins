@@ -11,6 +11,7 @@ Context: $ARGUMENTS (if provided, this is the agent name; it must match the `age
 Steps:
 
 1. Explain the prerequisites, checking what you can in the repo:
+   - If the user only wants to SEE what the check posts before creating an account, tell them first: the Action runs with no `api-key` in fixture mode (v1.2.0) — a one-step workflow renders the seeded demo's report and posts the real comment, labelled as sample data. The prerequisites below are for checking THEIR agent.
    - The agent must already be traced with the DecimalAI SDK (`pip install decimalai`; look for `decimalai.init(` in the codebase to confirm and to find the real `agent_name`).
    - A `DECIMAL_API_KEY` must be added to the repo's GitHub Actions secrets (Settings → Secrets and variables → Actions). The user gets the key from https://app.decimal.ai/settings.
 
