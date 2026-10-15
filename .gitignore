@@ -1,4 +1,5 @@
-# This repo ships prompt text and two JSON manifests — no build, no toolchain.
+# This repo ships prompt text, two JSON manifests and one standard-library Python script
+# (plugins/decimalai/scripts/registry.py) — no build, no toolchain.
 # The list below is the DecimalAI baseline shared across our public repos: most
 # of these artefacts cannot be produced here, and they are listed so that a
 # scratch script, a local venv, or an editor never turns into a committed one.

@@ -1,9 +1,10 @@
 # Security Policy
 
-This repository is a **Claude Code plugin marketplace**. It ships no compiled code — the
-deliverable is three slash-command prompts (`commands/*.md`) plus two JSON manifests. Those
-prompts instruct Claude to run `curl` against the public DecimalAI registry and to write files
-into the user's project. That is the whole trust boundary, and it is what this policy is about.
+This repository is a **Claude Code plugin marketplace**. It ships no compiled code. The
+deliverable is three slash-command prompts (`commands/*.md`), one standard-library Python script
+that two of them run (`scripts/registry.py`), and two JSON manifests. The script fetches from the
+public DecimalAI registry with `curl` and writes files into the user's project. That is the whole
+trust boundary, and it is what this policy is about.
 
 ## Reporting a vulnerability
 
@@ -28,21 +29,31 @@ The commands take two kinds of untrusted input: the argument the user types, and
 public registry returns. Both end up in a shell command, in a file path, or in a file's contents.
 Anything that escapes those is in scope:
 
-- **Writing outside `.claude/skills/<url_slug>/`.** The install command derives a directory name
-  and attachment paths from registry-controlled fields. A registry record that causes a write to
-  an absolute path, a parent directory, or anywhere else in the user's tree is the highest-severity
-  bug this repo can have.
-- **Command injection through `$ARGUMENTS`.** The user's argument is interpolated into the `curl`
-  lines. An argument that ends up executing anything other than the intended GET is in scope.
+- **Writing outside `.claude/skills/<install_name>/`.** The install script takes the folder name
+  and every file path from the registry's answer. A registry answer that causes a write to an
+  absolute path, a parent directory, or anywhere else in the user's tree is the highest-severity
+  bug this repo can have. So is a write through a symlink, or a second `SKILL.md` inside a skill's
+  folder.
+- **Command injection through `$ARGUMENTS`.** The user's argument reaches the script on standard
+  input, inside a quoted heredoc, and is never interpolated into a URL or a shell word. An
+  argument that ends up executing anything other than the script is in scope. One limit is known
+  and documented. Claude Code substitutes `$ARGUMENTS` as plain text, so an argument containing a
+  newline followed by the line `DECIMALAI_ARGS` ends the heredoc early. The command's first step
+  refuses any argument outside the url_slug allowlist before anything runs. Claude Code's
+  permission rules also match each line of a multi-line command separately (per its
+  documentation), so the command's `Bash(python3:*)` does not pre-approve an injected line.
 - **Trust-gate bypass.** `/decimalai:install` must refuse a skill whose `skill_safety` band is
-  `blocked`, and must obtain explicit confirmation for `caution` and `unreviewed`. Any registry
-  response shape — a missing field, an unexpected type, an error body — that results in a
-  `blocked` skill being written, or a `caution` skill being written silently, is in scope.
-- **Provenance integrity.** The `source` / `source_sha256` frontmatter is what lets a reader
-  re-fetch a skill and confirm the bytes. A stamp that points at the wrong record, or a hash that
-  does not cover the body as served, defeats that.
-- **Attachment integrity.** Attachments are written only after their SHA-256 is verified against
-  the registry's `content_hash`. A way to get an unverified attachment onto disk is in scope.
+  `blocked`, and must obtain explicit confirmation for `caution` and `unreviewed`. The script
+  enforces this: it exits without fetching the folder until it is run with `--yes`. Any registry
+  response shape (a missing field, an unexpected type, an error body) that results in a `blocked`
+  skill being written, or a `caution` skill being written silently, is in scope.
+- **Provenance integrity.** The plugin writes the registry's rendered `SKILL.md` unchanged. Its
+  `metadata.decimalai-body-sha256` is what lets a reader re-fetch the skill and confirm the body;
+  the registry's ETag for that `SKILL.md` starts with the same hash. A written file that differs
+  from the bytes served defeats that.
+- **File integrity.** Every file is written only after its bytes hash to the sha256 the registry
+  declared, and is read back and re-checked, with its mode, before the folder is moved into
+  place. A way to get an unverified or altered file onto disk is in scope.
 - **Tool-surface widening.** Each command declares `allowed-tools`. A prompt that induces Claude
   to reach for a tool outside that declaration is in scope.
 

@@ -2,8 +2,10 @@
 
 Thanks for your interest. This repo is a Claude Code plugin marketplace, which shapes everything
 below: there is no build step and no test runner. The deliverable is **prompt text** in
-`plugins/decimalai/commands/*.md` plus two JSON manifests, and the only way to know a change works
-is to install it locally and run it.
+`plugins/decimalai/commands/*.md`, the standard-library script `plugins/decimalai/scripts/registry.py`
+that search and install run, and two JSON manifests. The only way to know a prompt change works is
+to install it locally and run it. The script also runs on its own, and `DECIMALAI_PLUGIN_API_URL`
+points it at a local registry (see the README).
 
 ## Before you open a PR
 
@@ -25,8 +27,9 @@ Then install the working copy and exercise every command you touched:
   the plugin directory.
 - **A real transcript.** Paste what the command actually did — the request, the output, the files
   written. Prompt changes cannot be unit-tested, so the transcript is the evidence. If you changed
-  `/decimalai:install`, run it against a namespaced skill (a `name` containing `/`) and against a
-  skill with `attachment_count > 0`; those are the two shapes that have broken before.
+  `/decimalai:install` or `scripts/registry.py`, run it against a namespaced skill (a `name`
+  containing `/`) and against a skill with attachments; those are the two shapes that have broken
+  before. Show that the files on disk hash to the sha256 the registry served.
 - **A `version` bump in *both* `plugins/decimalai/.claude-plugin/plugin.json` and the matching
   entry in `.claude-plugin/marketplace.json`.** They must stay equal. Users only receive an update
   when the version changes, so a fix with no bump ships to nobody.
@@ -42,6 +45,12 @@ Then install the working copy and exercise every command you touched:
   for both.
 - **Refuse, do not sanitise.** When a value that will become a path is unsafe, stop and tell the
   user why. Silently rewriting it hides a hostile record.
+- **Skill files are the registry's bytes.** The script writes them; a prompt never asks Claude to
+  write, edit or retype a skill's files.
+- **Arguments reach the script on standard input**, inside a quoted heredoc, never inside a shell
+  word or a URL. Command markdown must contain no `$` followed by a digit (Claude Code substitutes
+  it with a positional argument) and no `!` followed by a backtick (Claude Code runs that as a
+  shell command when the command loads).
 - **Never invent a number.** If a field is null, render it blank or `New`. Every metric these
   commands display is a measurement, and a plausible-looking guess is worse than a gap.
 
