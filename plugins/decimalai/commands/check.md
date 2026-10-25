@@ -6,13 +6,13 @@ allowed-tools: Read, Write, Bash(ls:*)
 
 Help the user add DecimalAI's **regression-check** GitHub Action to this repository. The Action diffs the agent's candidate manifest against recorded production traces on every PR and posts an impact report — which traces would break, at what risk level — with **no eval cases required**.
 
-Context: $ARGUMENTS (if provided, this is the agent name; it must match the `agent_name` used in `decimalai.init()` / the tracing handler).
+Context: $ARGUMENTS (if provided, this is the agent name; it must match the name the app's production traces are filed under: the first argument of its `agent_config("<name>")` (SDK 0.25+), or, in an app with no agent config, `decimalai.init(agent_name=...)`, `DECIMAL_AGENT_NAME` or the tracing handler's `agent_name`).
 
 Steps:
 
 1. Explain the prerequisites, checking what you can in the repo:
    - If the user only wants to SEE what the check posts before creating an account, tell them first: the Action runs with no `api-key` in fixture mode (v1.2.0) — a one-step workflow renders the seeded demo's report and posts the real comment, labelled as sample data. The prerequisites below are for checking THEIR agent.
-   - The agent must already be traced with the DecimalAI SDK (`pip install decimalai`; look for `decimalai.init(` in the codebase to confirm and to find the real `agent_name`).
+   - The agent must already be traced with the DecimalAI SDK. Look for `agent_config(` in the codebase (`from decimalai.<framework> import agent_config`: langchain, openai_agents, openai, anthropic, google_genai, pydantic_ai or adk) to confirm, and take the real agent name from its first argument. `agent_config()` traces every run by itself, so there may be no `decimalai.init(` at all. An app with no `agent_config()` (a framework flag such as `decimalai.init(langchain=True)` or `crewai=True`, OpenTelemetry, or `@decimalai.trace`) names the agent with `decimalai.init(agent_name=...)`, `DECIMAL_AGENT_NAME`, or the decorator's `agent_name=`.
    - A `DECIMAL_API_KEY` must be added to the repo's GitHub Actions secrets (Settings → Secrets and variables → Actions). The user gets the key from https://app.decimal.ai/settings.
 
 2. Create the manifest-extraction entry point `scripts/init_for_decimal.py` (skip if the repo already has one — check first). The Action does **not** build the manifest itself: it diffs a *candidate manifest that a prior step uploaded*. Without this step the Action has nothing to compare and fails the first PR with `No candidate-manifest-id provided or discoverable`.
@@ -27,7 +27,7 @@ no LLM calls are issued.
 import decimalai
 from myapp.agent import build_agent  # adjust to your agent factory
 
-AGENT_NAME = "<AGENT_NAME>"  # must match decimalai.init()
+AGENT_NAME = "<AGENT_NAME>"  # the name production passes to agent_config(...)
 
 
 def main() -> None:
@@ -86,7 +86,7 @@ jobs:
       - uses: decimal-labs/regression-check@v1
         with:
           api-key: ${{ secrets.DECIMAL_API_KEY }}
-          agent-name: <AGENT_NAME>       # must match decimalai.init()
+          agent-name: <AGENT_NAME>       # the name production passes to agent_config(...)
           candidate-manifest-id: ${{ steps.decimal_manifest.outputs.decimal_manifest_id }}
           fail-on: high                  # high | medium | none
 ```
