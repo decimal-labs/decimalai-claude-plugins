@@ -477,11 +477,26 @@ def project_dir(raw: str) -> str:
     return os.path.abspath(raw)
 
 
+# Until this date a benchmark stored a case as failed when no check separated the two runs, even when
+# every check passed, and those counts were never repaired: `browser-automation` stored 2 of 23 where
+# its own checks say 23 of 23. The skill's page corrects them from the run's checks, which the search
+# and detail records don't carry, so no count or lift is shown for such a run. The same rule and words
+# as `decimalai skills search` (decimalai 0.28.1) and the MCP server (0.1.5).
+COUNTS_FROM_CHECKS_SINCE = "2026-08-01"
+
+
+def before_august(bench: dict) -> bool:
+    completed = bench.get("completed_at")
+    return isinstance(completed, str) and completed < COUNTS_FROM_CHECKS_SINCE
+
+
 def trust_lines(rec: dict) -> list:
     bench = rec.get("benchmark_summary") if isinstance(rec.get("benchmark_summary"), dict) else {}
     lift = bench.get("pass_rate_delta_pts")
     lift = number(lift)
     lift_text = f"{lift:+g} pts pass rate" if lift is not None else "no measured lift"
+    if before_august(bench):
+        lift_text = "tested before August 2026, when results were counted differently, so no count is shown"
     verdict = bench.get("verdict")
     return [
         f"skill: {shown(rec.get('name'))} (url_slug {shown(rec.get('url_slug'))}, id {rec['id']})",
@@ -684,13 +699,16 @@ def search(text: str) -> int:
         score = number(eff.get("skill_score"))
         bench = item.get("benchmark_summary") if isinstance(item.get("benchmark_summary"), dict) else {}
         lift = number(bench.get("pass_rate_delta_pts"))
+        lift_text = (f"{lift:+g} pts" if lift is not None else "")
+        if before_august(bench):
+            lift_text = "tested before Aug 2026, no count"
         agents = number(item.get("install_agents"))
         say("| " + " | ".join([
             f"`/decimalai:install {ref}`" if ref else "(not installable by name)",
             f"`.claude/skills/{name}/`" if valid_install_name(name) else "",
             desc,
-            f"{score:.2f}" if score is not None else "New",
-            f"{lift:+g} pts" if lift is not None else "",
+            f"{round(max(0.0, min(1.0, score)) * 100)}/100" if score is not None else "New",
+            lift_text,
             cell(item.get("skill_safety") or "unknown", 20),
             f"on {agents:g} agent{'s' if agents != 1 else ''}" if agents else "",
         ]) + " |")
